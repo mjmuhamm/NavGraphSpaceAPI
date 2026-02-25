@@ -12,6 +12,11 @@ class SpaceViewModel(private val repository: SpaceRepository = SpaceRepository()
     private val _spaceState = MutableLiveData<SpaceState>(SpaceState.Loading)
     val spaceState = _spaceState
 
+
+init {
+    getInfo()
+}
+
     fun getInfo() {
         viewModelScope.launch {
             _spaceState.value = SpaceState.Loading
