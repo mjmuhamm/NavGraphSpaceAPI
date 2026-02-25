@@ -104,7 +104,7 @@ fun MainScreen(viewModel: SpaceViewModel, onNavigate: (String) -> Unit = {}) {
                     verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     items((state as SpaceState.Success).data) { info ->
                         SpaceItems(info, onNavigate = { id ->
-                            onNavigate(id) // pass the ID from SpaceItems to Home
+                            onNavigate(id)
                         })
 //                        SpaceItems(info, onNavigate = { onNavigate(info.id.toString()) } )
                     }
@@ -235,7 +235,7 @@ fun SecondPage(id: String, viewModel: SecondViewModel, onNavigate: () -> Unit = 
 
                     is SecondState.Error -> {
                         Column() {
-                            Text("ID passed: $id", modifier = Modifier.padding(30.dp))
+                            Text("Id passed: $id", modifier = Modifier.padding(30.dp))
                             Text("Error loading second page: ${(state as SecondState.Error).message}", modifier = Modifier.padding(30.dp))
                         }
                     }
