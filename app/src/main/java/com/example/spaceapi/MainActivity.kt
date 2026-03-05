@@ -84,14 +84,14 @@ class MainActivity : ComponentActivity() {
     fun AppNavHost(navHostController: NavHostController) {
         NavHost(
             navController = navHostController,
-            startDestination = Routes.HOME
+            startDestination = Routes.Home.route
         ) {
 
-            composable(Routes.HOME) {
+            composable(Routes.Home.route) {
                 MainScreen(viewModel = viewModel, navController = navHostController)
             }
 
-            composable(Routes.DETAIL,
+            composable(Routes.Detail.route,
                 listOf(
                     navArgument("userId") {
                         type = NavType.StringType
@@ -150,11 +150,16 @@ class MainActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items((state as SpaceState.Success).data) { info ->
+//                            SpaceItems(info, onNavigate = { id ->
+//                                navController.navigate("detail/${id}")
+//                            })
                             SpaceItems(info, onNavigate = { id ->
-                                navController.navigate("detail/${id}")
+                                navController.navigate(Routes.Detail.createRoute(id))
                             })
 //                        SpaceItems(info, onNavigate = { onNavigate(info.id.toString()) } )
                         }
+
+
                     }
                 }
 
