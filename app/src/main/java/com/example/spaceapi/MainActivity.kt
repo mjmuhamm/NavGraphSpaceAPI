@@ -136,7 +136,14 @@ class MainActivity : ComponentActivity() {
             contentAlignment = Alignment.Center
         ) {
             when (state) {
-                is SpaceState.Loading -> CircularProgressIndicator()
+                is SpaceState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
                 is SpaceState.Success -> {
                     LazyColumn(
                         contentPadding = PaddingValues(16.dp),
@@ -193,7 +200,14 @@ class MainActivity : ComponentActivity() {
 
         val state by viewModel.secondState.observeAsState(SecondState.Loading)
         when (state) {
-            is SecondState.Loading -> CircularProgressIndicator()
+            is SecondState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
 
             is SecondState.Success -> {
                 val info = (state as SecondState.Success).data
