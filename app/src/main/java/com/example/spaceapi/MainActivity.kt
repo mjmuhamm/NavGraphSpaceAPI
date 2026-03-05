@@ -100,7 +100,7 @@ class MainActivity : ComponentActivity() {
                     }
                 )) { backStackEntry ->
                 val userId = backStackEntry.arguments?.getString("userId") ?: "Unknown"
-                SecondPage(id = userId, viewModel = viewModel2, { navHostController.popBackStack() })
+                SecondPage(id = userId, viewModel = viewModel2, navController = navHostController)
 
             }
         }
@@ -126,7 +126,7 @@ class MainActivity : ComponentActivity() {
 //            SecondPage(id = passingId, viewModel = viewModel2, onBack = {})
 //        }
 //    }
-    
+
 
     @Composable
     fun Greeting(name: String, modifier: Modifier = Modifier) {

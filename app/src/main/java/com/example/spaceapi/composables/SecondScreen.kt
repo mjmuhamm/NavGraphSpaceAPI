@@ -23,12 +23,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.spaceapi.viewModel.SecondState
 import com.example.spaceapi.viewModel.SecondViewModel
 
 @Composable
-fun SecondPage(id: String, viewModel: SecondViewModel, onBack: () -> Unit) {
+fun SecondPage(id: String, viewModel: SecondViewModel, navController: NavController) {
 
     LaunchedEffect(id) {
         viewModel.secondPage(id)
@@ -66,7 +67,7 @@ fun SecondPage(id: String, viewModel: SecondViewModel, onBack: () -> Unit) {
                             fontWeight = FontWeight.Light,
                             modifier = Modifier
                                 .padding(0.dp, 0.dp, 20.dp, 0.dp)
-                                .clickable(onClick = onBack)
+                                .clickable(onClick = { navController.popBackStack() })
 
                         )
 
