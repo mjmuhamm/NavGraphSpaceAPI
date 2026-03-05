@@ -54,9 +54,7 @@ fun MainScreen(viewModel: SpaceViewModel, navController: NavController) {
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items((state as SpaceState.Success).data) { info ->
-//                            SpaceItems(info, onNavigate = { id ->
-//                                navController.navigate("detail/${id}")
-//                            })
+
                         SpaceItems(info, navController = navController)
 //                        SpaceItems(info, onNavigate = { onNavigate(info.id.toString()) } )
                     }
@@ -77,7 +75,12 @@ fun SpaceItems(info: Result, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = { navController.navigate(Routes.Detail.createRoute(info.id.toString())) })
+            .clickable(onClick = {
+                //        SpaceItems(info, onNavigate = { id ->
+//                                navController.navigate("detail/${info.id.toString()}")
+//                            })
+                navController.navigate(Routes.Detail.createRoute(info.id.toString()))
+            })
     ) {
         Row(
             modifier = Modifier
