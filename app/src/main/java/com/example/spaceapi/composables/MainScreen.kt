@@ -57,9 +57,7 @@ fun MainScreen(viewModel: SpaceViewModel, navController: NavController) {
 //                            SpaceItems(info, onNavigate = { id ->
 //                                navController.navigate("detail/${id}")
 //                            })
-                        SpaceItems(info, onNavigate = { id ->
-                            navController.navigate(Routes.Detail.createRoute(id))
-                        })
+                        SpaceItems(info, navController = navController)
 //                        SpaceItems(info, onNavigate = { onNavigate(info.id.toString()) } )
                     }
 
@@ -75,11 +73,11 @@ fun MainScreen(viewModel: SpaceViewModel, navController: NavController) {
 }
 
 @Composable
-fun SpaceItems(info: Result, onNavigate: (String) -> Unit = {}) {
+fun SpaceItems(info: Result, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = { onNavigate(info.id.toString()) })
+            .clickable(onClick = { navController.navigate(Routes.Detail.createRoute(info.id.toString())) })
     ) {
         Row(
             modifier = Modifier
