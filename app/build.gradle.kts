@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.runtime.livedata)
+    implementation(libs.androidx.navigation.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -77,5 +78,8 @@ dependencies {
     ksp(libs.hilt.compiler) // Use `ksp` instead of `kapt`
     implementation("androidx.hilt:hilt-lifecycle-viewmodel:1.3.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
+
+    val navVersion = "2.9.0"
+    implementation("androidx.navigation:navigation-compose:$navVersion")
 
 }

@@ -39,8 +39,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import coil.compose.AsyncImage
 import com.example.spaceapi.model.firstPage.Result
+import com.example.spaceapi.routes.Routes
 import com.example.spaceapi.ui.theme.SpaceAPITheme
 import com.example.spaceapi.viewModel.SecondState
 import com.example.spaceapi.viewModel.SecondViewModel
@@ -58,210 +66,249 @@ class MainActivity : ComponentActivity() {
         setContent {
             SpaceAPITheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Home(
-                        viewModel = viewModel,
-                        viewModel2 = viewModel2,
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    MyApp(Modifier.padding(innerPadding))
                 }
             }
         }
     }
-}
 
-@Composable
-fun Home(viewModel: SpaceViewModel, viewModel2: SecondViewModel, modifier: Modifier = Modifier) {
-    var currentScreen by rememberSaveable() { mutableStateOf(true) }
-    var passingId by rememberSaveable { mutableStateOf("") }
+    @Composable
+    fun MyApp(modifier: Modifier) {
+        val navHostController = rememberNavController()
+        AppNavHost(navHostController = navHostController)
 
-    if (currentScreen) {
-        MainScreen(viewModel = viewModel, onNavigate = { id ->
-            passingId = id
-            currentScreen = false
-        })
-    } else {
-        SecondPage(id = passingId, viewModel = viewModel2, onNavigate = {
-            currentScreen = true
-        })
+
     }
-}
 
-@Composable
-fun MainScreen(viewModel: SpaceViewModel, onNavigate: (String) -> Unit = {}) {
+    @Composable
+    fun AppNavHost(navHostController: NavHostController) {
+        NavHost(
+            navController = navHostController,
+            startDestination = Routes.HOME
+        ) {
 
-    val state by viewModel.spaceState.observeAsState(SpaceState.Loading)
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 16.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        when (state) {
-            is SpaceState.Loading -> CircularProgressIndicator()
-            is SpaceState.Success -> {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items((state as SpaceState.Success).data) { info ->
-                        SpaceItems(info, onNavigate = { id ->
-                            onNavigate(id)
-                        })
+            composable(Routes.HOME) {
+                MainScreen(viewModel = viewModel, navController = navHostController)
+            }
+
+            composable(Routes.DETAIL,
+                listOf(
+                    navArgument("userId") {
+                        type = NavType.StringType
+                    }
+                )) { backStackEntry ->
+                val userId = backStackEntry.arguments?.getString("userId") ?: "Unknown"
+                SecondPage(id = userId, viewModel = viewModel2, { navHostController.popBackStack() })
+
+            }
+        }
+    }
+
+
+//    @Composable
+//    fun Home(
+//        viewModel: SpaceViewModel,
+//        viewModel2: SecondViewModel,
+//        modifier: Modifier = Modifier,
+//        onNavigateToDetail : () -> Unit
+//    ) {
+//        var currentScreen by rememberSaveable() { mutableStateOf(true) }
+//        var passingId by rememberSaveable { mutableStateOf("") }
+//
+//        if (currentScreen) {
+//            MainScreen(viewModel = viewModel, onNavigateToDetail = { id ->
+//                passingId = id
+//                currentScreen = false
+//            })
+//        } else {
+//            SecondPage(id = passingId, viewModel = viewModel2, onBack = {})
+//        }
+//    }
+
+    @Composable
+    fun MainScreen(viewModel: SpaceViewModel, navController: NavController) {
+
+        val state by viewModel.spaceState.observeAsState(SpaceState.Loading)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            when (state) {
+                is SpaceState.Loading -> CircularProgressIndicator()
+                is SpaceState.Success -> {
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items((state as SpaceState.Success).data) { info ->
+                            SpaceItems(info, onNavigate = { id ->
+                                navController.navigate("detail/${id}")
+                            })
 //                        SpaceItems(info, onNavigate = { onNavigate(info.id.toString()) } )
+                        }
                     }
                 }
+
+                is SpaceState.Error -> {}
             }
 
-            is SpaceState.Error -> {}
         }
-
     }
-}
 
-@Composable
-fun SpaceItems(info: Result, onNavigate: (String) -> Unit = {}) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = { onNavigate(info.id.toString()) })
-    ) {
-        Row(
+    @Composable
+    fun SpaceItems(info: Result, onNavigate: (String) -> Unit = {}) {
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .clickable(onClick = { onNavigate(info.id.toString()) })
         ) {
-            AsyncImage(
-                model = info.image_url,
-                contentDescription = info.summary,
+            Row(
                 modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-            )
-
-            Text(text = info.title, modifier = Modifier.padding(start = 20.dp))
-        }
-    }
-}
-
-
-@Composable
-fun SecondPage(id: String, viewModel: SecondViewModel, onNavigate: () -> Unit = {}) {
-
-    LaunchedEffect(id) {
-        viewModel.secondPage(id)
-    }
-
-    val state by viewModel.secondState.observeAsState(SecondState.Loading)
-    when (state) {
-        is SecondState.Loading -> CircularProgressIndicator()
-
-        is SecondState.Success -> {
-            val info = (state as SecondState.Success).data
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)) {
-                Row(modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 25.dp, top = 10.dp)) {
-                    Box(modifier = Modifier) {
-
-                        Text(
-                            "<",
-                            color = Color.Gray,
-                            fontSize = 50.sp,
-                            fontWeight = FontWeight.Light,
-                            modifier = Modifier
-                                .padding(0.dp, 0.dp, 20.dp, 0.dp)
-                                .clickable(onClick = onNavigate)
-
-                        )
-
-                        Text(
-                            "Second Page",
-                            color = Color.Black,
-                            fontSize = 30.sp,
-                            fontWeight = FontWeight.Normal,
-                            textAlign = TextAlign.Center,
-
-
-                            modifier = Modifier.padding(100.dp, 13.dp, 0.dp, 0.dp)
-                        )
-                    }
-                }
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(top = 10.dp),
-                    thickness = 0.8.dp,
-                    color = Color.Gray
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AsyncImage(
+                    model = info.image_url,
+                    contentDescription = info.summary,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
                 )
-                Row(modifier = Modifier
-                    .padding(30.dp)
-                    .fillMaxWidth()) {
-                    AsyncImage(
-                        model = info.image_url,
-                        contentDescription = info.summary,
-                        modifier = Modifier.size(150.dp)
-                    )
-                    Column {
-                        Text(
-                            info.title,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(start = 10.dp, top = 20.dp)
-                        )
-                        Text(
-                            "Author: ${info.authors[0].name}",
-                            modifier = Modifier.padding(start = 10.dp, top = 8.dp)
-                        )
-                    }
-                }
-                Column(modifier = Modifier.padding(start = 25.dp, end = 15.dp)) {
-                    Text("News Site", modifier = Modifier.padding(bottom = 7.dp))
-                    Text(
-                        info.news_site,
-                        modifier = Modifier,
-                        fontWeight = FontWeight.Bold
-                    )
 
-                    Text(
-                        "News Article",
-                        modifier = Modifier.padding(bottom = 7.dp, top = 20.dp)
-                    )
-                    Text(info.url)
-
-                    Text(
-                        "Summary",
-                        modifier = Modifier.padding(bottom = 7.dp, top = 20.dp)
-                    )
-                    Text(info.summary)
-                }
-
-            }
-        }
-
-        is SecondState.Error -> {
-            Column() {
-                Text("Id passed: $id", modifier = Modifier.padding(30.dp))
-                Text(
-                    "Error loading second page: ${(state as SecondState.Error).message}",
-                    modifier = Modifier.padding(30.dp)
-                )
+                Text(text = info.title, modifier = Modifier.padding(start = 20.dp))
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
-@Composable
-fun GreetingPreview() {
-    SpaceAPITheme {
-        Greeting("Android")
+    @Composable
+    fun SecondPage(id: String, viewModel: SecondViewModel, onBack: () -> Unit) {
+
+        LaunchedEffect(id) {
+            viewModel.secondPage(id)
+        }
+
+        val state by viewModel.secondState.observeAsState(SecondState.Loading)
+        when (state) {
+            is SecondState.Loading -> CircularProgressIndicator()
+
+            is SecondState.Success -> {
+                val info = (state as SecondState.Success).data
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 25.dp, top = 10.dp)
+                    ) {
+                        Box(modifier = Modifier) {
+
+                            Text(
+                                "<",
+                                color = Color.Gray,
+                                fontSize = 50.sp,
+                                fontWeight = FontWeight.Light,
+                                modifier = Modifier
+                                    .padding(0.dp, 0.dp, 20.dp, 0.dp)
+                                    .clickable(onClick = onBack)
+
+                            )
+
+                            Text(
+                                "Second Page",
+                                color = Color.Black,
+                                fontSize = 30.sp,
+                                fontWeight = FontWeight.Normal,
+                                textAlign = TextAlign.Center,
+
+
+                                modifier = Modifier.padding(100.dp, 13.dp, 0.dp, 0.dp)
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 10.dp),
+                        thickness = 0.8.dp,
+                        color = Color.Gray
+                    )
+                    Row(
+                        modifier = Modifier
+                            .padding(30.dp)
+                            .fillMaxWidth()
+                    ) {
+                        AsyncImage(
+                            model = info.image_url,
+                            contentDescription = info.summary,
+                            modifier = Modifier.size(150.dp)
+                        )
+                        Column {
+                            Text(
+                                info.title,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(start = 10.dp, top = 20.dp)
+                            )
+                            Text(
+                                "Author: ${info.authors[0].name}",
+                                modifier = Modifier.padding(start = 10.dp, top = 8.dp)
+                            )
+                        }
+                    }
+                    Column(modifier = Modifier.padding(start = 25.dp, end = 15.dp)) {
+                        Text("News Site", modifier = Modifier.padding(bottom = 7.dp))
+                        Text(
+                            info.news_site,
+                            modifier = Modifier,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Text(
+                            "News Article",
+                            modifier = Modifier.padding(bottom = 7.dp, top = 20.dp)
+                        )
+                        Text(info.url)
+
+                        Text(
+                            "Summary",
+                            modifier = Modifier.padding(bottom = 7.dp, top = 20.dp)
+                        )
+                        Text(info.summary)
+                    }
+
+                }
+            }
+
+            is SecondState.Error -> {
+                Column() {
+                    Text("Id passed: $id", modifier = Modifier.padding(30.dp))
+                    Text(
+                        "Error loading second page: ${(state as SecondState.Error).message}",
+                        modifier = Modifier.padding(30.dp)
+                    )
+                }
+            }
+        }
     }
+
+    @Composable
+    fun Greeting(name: String, modifier: Modifier = Modifier) {
+        Text(
+            text = "Hello $name!",
+            modifier = modifier
+        )
+    }
+
+    @Composable
+    fun GreetingPreview() {
+        SpaceAPITheme {
+            Greeting("Android")
+        }
+    }
+
 }
