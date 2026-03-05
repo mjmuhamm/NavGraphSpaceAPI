@@ -150,9 +150,7 @@ class MainActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items((state as SpaceState.Success).data) { info ->
-//                            SpaceItems(info, onNavigate = { id ->
-//                                navController.navigate("detail/${id}")
-//                            })
+
                             SpaceItems(info, navController = navController)
 //                        SpaceItems(info, onNavigate = { onNavigate(info.id.toString()) } )
                         }
@@ -172,7 +170,12 @@ class MainActivity : ComponentActivity() {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(onClick = { navController.navigate(Routes.Detail.createRoute(info.id.toString())) })
+                .clickable(onClick = {
+                    navController.navigate(Routes.Detail.createRoute(info.id.toString()))
+                    //    SpaceItems(info, onNavigate = { id ->
+//                                navController.navigate("detail/${info.id.toString()}")
+//                            })
+                })
         ) {
             Row(
                 modifier = Modifier
